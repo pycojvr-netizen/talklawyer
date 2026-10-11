@@ -1,0 +1,5 @@
+import { PageTitle } from "@/components/ui";
+import { DocumentsPanel } from "@/components/documents-panel";
+import { requireSession } from "@/lib/session";
+import { dbError } from "@/lib/api";
+export default async function Documents(){const s=await requireSession();const results=await Promise.all([s.db.from("documents").select("*").order("created_at",{ascending:false}),s.db.from("conversations").select("*").eq("active",true),s.db.rpc("contact_names"),s.db.from("document_shares").select("*")]);results.forEach(r=>dbError(r.error));const [docs,chats,names,shares]=results;const map:Record<string,string>=Object.fromEntries((names.data||[]).map((x:{id:string;full_name:string})=>[x.id,x.full_name]));const recipientIds=[...new Set((chats.data||[]).map(c=>c.requester_id===s.user.id?c.lawyer_id:c.requester_id))];return <><PageTitle eyebrow="INFORMAÇÕES SOB SEU CONTROLE" title="Documentos privados" description="Compartilhe somente o necessário. Downloads usam links protegidos com validade de 60 segundos."/><DocumentsPanel userId={s.user.id} documents={docs.data||[]} recipients={recipientIds.map(id=>({id,name:map[id]||"Contato"}))} shares={shares.data||[]}/></>;}

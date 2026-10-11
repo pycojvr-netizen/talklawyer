@@ -1,0 +1,5 @@
+import { PageTitle,Status } from "@/components/ui";
+import { PrivacyForm } from "@/components/privacy-form";
+import { requireSession } from "@/lib/session";
+import { dbError } from "@/lib/api";
+export default async function Privacy(){const s=await requireSession();const {data,error}=await s.db.from("privacy_requests").select("*").eq("user_id",s.user.id).order("created_at",{ascending:false});dbError(error);return <><PageTitle eyebrow="SEUS DADOS, SEUS DIREITOS" title="Privacidade" description="Registre pedidos de acesso, correção, exclusão ou portabilidade e acompanhe seu andamento."/><section className="panel"><h2 style={{marginBottom:20}}>Nova solicitação</h2><PrivacyForm/></section><section className="panel"><h2>Histórico de solicitações</h2>{(data||[]).map(x=><div className="admin-item" key={x.id}><Status value={x.status}/><small style={{marginLeft:15}}>{new Date(x.created_at).toLocaleString("pt-BR")}</small><p style={{whiteSpace:"pre-wrap",marginTop:10}}>{x.details}</p></div>)}{!data?.length&&<p className="muted" style={{marginTop:20}}>Você ainda não registrou solicitações.</p>}</section></>;}

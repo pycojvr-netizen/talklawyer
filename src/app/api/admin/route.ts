@@ -1,0 +1,5 @@
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { handle,apiSession,dbError,HttpError ,readJson} from "@/lib/api";
+import { verificationSchema,uuid } from "@/lib/validation";
+export async function POST(r:NextRequest){return handle(async()=>{const s=await apiSession(r);if(!s.isAdmin)throw new HttpError(403,"Acesso negado.");const body=await readJson(r);if(body.action==="verify"){const v=verificationSchema.parse(body);const {error}=await s.db.rpc("verify_lawyer",{target:v.user_id,decision:v.status,evidence:v.note});dbError(error);}else if(body.action==="account"){const v=z.object({user_id:uuid,suspend:z.boolean(),note:z.string().trim().min(10).max(1000)}).parse(body);const {error}=await s.db.rpc("admin_account",{target:v.user_id,suspend:v.suspend,reason:v.note});dbError(error);}else{const v=z.object({id:uuid,entity:z.enum(["report","privacy"]),status:z.enum(["resolved","dismissed","completed"]),note:z.string().trim().min(10).max(1000)}).parse(body);const {error}=await s.db.rpc("admin_resolve",{target:v.id,entity:v.entity,decision:v.status,note:v.note});dbError(error);}return true;});}

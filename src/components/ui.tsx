@@ -1,0 +1,9 @@
+import type { ReactNode } from "react";
+import { ShieldCheck,ArrowRight } from "lucide-react";
+import Link from "next/link";
+import type { Lawyer } from "@/lib/types";
+export function PageTitle({eyebrow,title,description,action}:{eyebrow?:string;title:string;description?:string;action?:ReactNode}){return <div className="page-title"><div>{eyebrow&&<div className="eyebrow">{eyebrow}</div>}<h1>{title}</h1>{description&&<p>{description}</p>}</div>{action}</div>;}
+export function Empty({title,description}:{title:string;description:string}){return <div className="empty"><div className="empty-symbol">◌</div><h3>{title}</h3><p>{description}</p></div>;}
+export function LawyerCard({lawyer:l}:{lawyer:Lawyer}){return <article className="lawyer-card"><div className="lawyer-top"><div className="avatar avatar-large">{trustedAvatar(l.avatar_url)?<img referrerPolicy="no-referrer" src={trustedAvatar(l.avatar_url)} alt=""/>:l.display_name.slice(0,1)}</div><span className="verified"><ShieldCheck size={14}/>OAB verificada</span></div><h3>{l.display_name}</h3><div className="muted">OAB/{l.oab_state} {l.oab_number} · {l.city}, {l.state}</div><p className="bio-preview">{l.bio}</p><div className="chips">{l.areas.slice(0,3).map(a=><span className="chip" key={a}>{a}</span>)}</div><div className="card-footer"><span className="availability">{l.available&&<i/>}{l.available?"Disponível para contato":"Indisponível"}</span><Link href={`/lawyers/${l.user_id}`} className="text-button">Ver perfil<ArrowRight size={15}/></Link></div></article>;}
+export function Status({value}:{value:string}){const labels:Record<string,string>={pending:"Pendente",accepted:"Aceita",rejected:"Recusada",closed:"Encerrada",approved:"Verificado",open:"Aberta",resolved:"Resolvida",dismissed:"Arquivada",completed:"Concluída"};return <span className={`status status-${value}`}>{labels[value]||value}</span>;}
+import { trustedAvatar } from "@/lib/security";
